@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "531044938242",
+    "project_id": "fresh-food-9ef85",
+    "storage_bucket": "fresh-food-9ef85.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531044938242:android:d43dd39148cfbef9176d1b",
+        "android_client_info": {
+          "package_name": "com.example.agri_tech_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "531044938242-7rkhgh5osbsl2u37tivd0bgusj66l0n9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEZpqv1aFrktz3UJcZH6-fZKoE7J93QbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "531044938242-7rkhgh5osbsl2u37tivd0bgusj66l0n9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
