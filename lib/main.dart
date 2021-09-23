@@ -1,13 +1,33 @@
+import 'package:agri_tech_app/src/app/app.dart';
+import 'package:agri_tech_app/src/app/bloc_observer.dart';
 import 'package:agri_tech_app/src/login.dart';
+import 'package:authentication_repository/authentication_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:bloc/bloc.dart';
+import 'package:flutter/widgets.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  Bloc.observer = AppBlocObserver();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  final authenticationRepository = AuthenticationRepository();
+  await authenticationRepository.user.first;
+  runApp(App(authenticationRepository: authenticationRepository));
+  // runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  const MyApp({
+    Key? key,
+    required AuthenticationRepository authenticationRepository,
+  })  : _authenticationRepository = authenticationRepository,
+        super(key: key);
+
+  final AuthenticationRepository _authenticationRepository;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
