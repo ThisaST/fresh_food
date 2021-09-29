@@ -5,7 +5,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:very_good_analysis/very_good_analysis.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';
@@ -18,8 +17,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
               ? AppState.authenticated(authenticationRepository.currentUser)
               : const AppState.unauthenticated(),
         ) {
-    // on<AppUserChanged>(_onUserChanged);
-    // on<AppLogoutRequested>(_onLogoutRequested);
+    on<AppUserChanged>(_onUserChanged);
+    on<AppLogoutRequested>(_onLogoutRequested);
     _userSubscription = _authenticationRepository.user.listen(
       (user) => add(AppUserChanged(user)),
     );
@@ -42,11 +41,5 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> close() {
     _userSubscription.cancel();
     return super.close();
-  }
-
-  @override
-  Stream<AppState> mapEventToState(AppEvent event) {
-    // TODO: implement mapEventToState
-    throw UnimplementedError();
   }
 }

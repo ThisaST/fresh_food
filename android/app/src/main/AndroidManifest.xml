@@ -3,6 +3,8 @@
    <application
         android:label="agri_tech_app"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyBUL3I9-m8WPgDLKBtVIAjBQUzlhH_9MwI"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

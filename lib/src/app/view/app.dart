@@ -1,3 +1,4 @@
+import 'package:agri_tech_app/src/main_page/cubit/botttom_nav_cubit.dart';
 import 'package:agri_tech_app/theme.dart';
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:flow_builder/flow_builder.dart';
@@ -18,10 +19,17 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepositoryProvider.value(
       value: _authenticationRepository,
-      child: BlocProvider(
-        create: (_) => AppBloc(
-          authenticationRepository: _authenticationRepository,
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AppBloc>(
+            create: (_) => AppBloc(
+              authenticationRepository: _authenticationRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (BuildContext context) => BottomNavCubit(),
+          ),
+        ],
         child: const AppView(),
       ),
     );
