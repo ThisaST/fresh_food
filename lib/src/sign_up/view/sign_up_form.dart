@@ -1,3 +1,4 @@
+import 'package:agri_tech_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agri_tech_app/src/sign_up/sign_up.dart';
@@ -21,18 +22,48 @@ class SignUpForm extends StatelessWidget {
         }
       },
       child: Align(
-        alignment: const Alignment(0, -1 / 3),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _EmailInput(),
-            const SizedBox(height: 8),
-            _PasswordInput(),
-            const SizedBox(height: 8),
-            _ConfirmPasswordInput(),
-            const SizedBox(height: 8),
-            _SignUpButton(),
-          ],
+        alignment: const Alignment(0, 0.8),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Image.asset(
+              //   'lib/src/assets/images/fresh_food_logo.png',
+              //   height: 120,
+              // ),
+              const SizedBox(height: 30),
+              Container(
+                child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    shadowColor: theme.dividerColor,
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          _EmailInput(),
+                          const SizedBox(height: 4),
+                          _PasswordInput(),
+                          const SizedBox(height: 4),
+                          _ConfirmPasswordInput(),
+                          const SizedBox(height: 4),
+                          _SignUpButton(),
+                        ],
+                      ),
+                    )),
+                decoration: new BoxDecoration(
+                  boxShadow: [
+                    new BoxShadow(
+                      color: theme.dividerColor,
+                      blurRadius: 15.0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -50,9 +81,12 @@ class _EmailInput extends StatelessWidget {
           onChanged: (email) => context.read<SignUpCubit>().emailChanged(email),
           keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
-            labelText: 'email',
+            labelText: 'Email',
             helperText: '',
             errorText: state.email.invalid ? 'invalid email' : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
           ),
         );
       },
@@ -72,9 +106,12 @@ class _PasswordInput extends StatelessWidget {
               context.read<SignUpCubit>().passwordChanged(password),
           obscureText: true,
           decoration: InputDecoration(
-            labelText: 'password',
+            labelText: 'Password',
             helperText: '',
             errorText: state.password.invalid ? 'invalid password' : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
           ),
         );
       },
@@ -97,11 +134,14 @@ class _ConfirmPasswordInput extends StatelessWidget {
               .confirmedPasswordChanged(confirmPassword),
           obscureText: true,
           decoration: InputDecoration(
-            labelText: 'confirm password',
+            labelText: 'Confirm Password',
             helperText: '',
             errorText: state.confirmedPassword.invalid
                 ? 'passwords do not match'
                 : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
           ),
         );
       },

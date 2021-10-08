@@ -59,7 +59,14 @@ class HomePage extends StatelessWidget {
           builder: (context, snapshot) {
             if (!snapshot.hasData) return const LinearProgressIndicator();
 
-            return _buildList(context, snapshot.data?.docs ?? []);
+            return GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 11.0,
+              ),
+              myLocationEnabled: true,
+            );
           }),
       // body: Align(
       //   alignment: const Alignment(0, -1 / 3),

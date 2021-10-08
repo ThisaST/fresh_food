@@ -1,3 +1,4 @@
+import 'package:agri_tech_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agri_tech_app/src/login/login.dart';
@@ -21,23 +22,46 @@ class LoginForm extends StatelessWidget {
         }
       },
       child: Align(
-        alignment: const Alignment(0, -1 / 3),
+        alignment: const Alignment(0, 0.8),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                'lib/src/assets/images/background-image.jpg',
+                'lib/src/assets/images/fresh_food_logo.png',
                 height: 120,
               ),
-              const SizedBox(height: 16),
-              _EmailInput(),
-              const SizedBox(height: 8),
-              _PasswordInput(),
-              const SizedBox(height: 8),
-              _LoginButton(),
-              const SizedBox(height: 8),
-              _GoogleLoginButton(),
+              const SizedBox(height: 50),
+              Container(
+                child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    shadowColor: theme.dividerColor,
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          _EmailInput(),
+                          const SizedBox(height: 4),
+                          _PasswordInput(),
+                          const SizedBox(height: 4),
+                          _LoginButton(),
+                          const SizedBox(height: 4),
+                          _GoogleLoginButton(),
+                        ],
+                      ),
+                    )),
+                decoration: new BoxDecoration(
+                  boxShadow: [
+                    new BoxShadow(
+                      color: theme.dividerColor,
+                      blurRadius: 15.0,
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 4),
               _SignUpButton(),
             ],
@@ -55,15 +79,19 @@ class _EmailInput extends StatelessWidget {
       buildWhen: (previous, current) => previous.email != current.email,
       builder: (context, state) {
         return TextField(
-          key: const Key('loginForm_emailInput_textField'),
-          onChanged: (email) => context.read<LoginCubit>().emailChanged(email),
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            labelText: 'email',
-            helperText: '',
-            errorText: state.email.invalid ? 'invalid email' : null,
-          ),
-        );
+            key: const Key('loginForm_emailInput_textField'),
+            onChanged: (email) =>
+                context.read<LoginCubit>().emailChanged(email),
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              labelText: 'Email',
+              helperText: '',
+              errorText: state.email.invalid ? 'Invalid email' : null,
+            ),
+            style: TextStyle(fontSize: 16.0, height: 1.0, color: Colors.black));
       },
     );
   }
@@ -76,16 +104,19 @@ class _PasswordInput extends StatelessWidget {
       buildWhen: (previous, current) => previous.password != current.password,
       builder: (context, state) {
         return TextField(
-          key: const Key('loginForm_passwordInput_textField'),
-          onChanged: (password) =>
-              context.read<LoginCubit>().passwordChanged(password),
-          obscureText: true,
-          decoration: InputDecoration(
-            labelText: 'password',
-            helperText: '',
-            errorText: state.password.invalid ? 'invalid password' : null,
-          ),
-        );
+            key: const Key('loginForm_passwordInput_textField'),
+            onChanged: (password) =>
+                context.read<LoginCubit>().passwordChanged(password),
+            obscureText: true,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              labelText: 'Password',
+              helperText: '',
+              errorText: state.password.invalid ? 'Invalid password' : null,
+            ),
+            style: TextStyle(fontSize: 16.0, height: 1.0, color: Colors.black));
       },
     );
   }
@@ -105,7 +136,7 @@ class _LoginButton extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  primary: const Color(0xFFFFD600),
+                  primary: theme.primaryColor,
                 ),
                 onPressed: state.status.isValidated
                     ? () => context.read<LoginCubit>().logInWithCredentials()

@@ -1,4 +1,5 @@
 import 'package:agri_tech_app/src/main_page/cubit/botttom_nav_cubit.dart';
+import 'package:agri_tech_app/src/onboarding/cubit/onboarding_cubit.dart';
 import 'package:agri_tech_app/theme.dart';
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:flow_builder/flow_builder.dart';
@@ -28,6 +29,9 @@ class App extends StatelessWidget {
           ),
           BlocProvider(
             create: (BuildContext context) => BottomNavCubit(),
+          ),
+          BlocProvider(
+            create: (BuildContext context) => OnboardingCubit(),
           ),
         ],
         child: const AppView(),

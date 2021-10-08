@@ -108,9 +108,9 @@ class Farm extends BaseModel {
 
   @override
   fromSnapshot(DocumentSnapshot<Object?> snapshot) {
-    final newPet = Farm.fromJson(snapshot.data() as Map<String, dynamic>);
-    newPet.referenceId = snapshot.reference.id;
-    return newPet;
+    final newFarm = Farm.fromJson(snapshot.data() as Map<String, dynamic>);
+    newFarm.referenceId = snapshot.reference.id;
+    return newFarm;
   }
 
   @override
