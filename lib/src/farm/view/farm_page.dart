@@ -1,11 +1,13 @@
 import 'package:agri_tech_app/src/common/repository/firebase_repository.dart';
 import 'package:agri_tech_app/src/farm/models/farm.dart';
 import 'package:agri_tech_app/src/farm/models/vegetable.dart';
+import 'package:agri_tech_app/src/planting/planting_page.dart';
 import 'package:agri_tech_app/theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:footer/footer.dart';
 import 'package:footer/footer_view.dart';
 
@@ -154,15 +156,18 @@ class _FarmPageState extends State<FarmPage> {
                                 Expanded(
                                   child: Column(
                                     children: [
-                                      Icon(Icons.food_bank),
-                                      SizedBox(
-                                        height: 7,
-                                      ),
+                                      IconButton(
+                                          // Use the FaIcon Widget + FontAwesomeIcons class for the IconData
+                                          icon: FaIcon(FontAwesomeIcons.carrot),
+                                          color: theme.primaryColor,
+                                          onPressed: () {
+                                            print("Pressed");
+                                          }),
                                       Text(
-                                        "15",
+                                        "9",
                                         style: TextStyle(
                                             color: Colors.black,
-                                            fontSize: 22.0,
+                                            fontSize: 16.0,
                                             fontWeight: FontWeight.w300),
                                       )
                                     ],
@@ -171,21 +176,39 @@ class _FarmPageState extends State<FarmPage> {
                                 Expanded(
                                   child: Column(
                                     children: [
+                                      IconButton(
+                                          // Use the FaIcon Widget + FontAwesomeIcons class for the IconData
+                                          icon:
+                                              FaIcon(FontAwesomeIcons.calendar),
+                                          color: theme.primaryColor,
+                                          onPressed: () {
+                                            print("Pressed");
+                                          }),
                                       Text(
-                                        "Followers",
-                                        style: TextStyle(
-                                            color: Colors.blueAccent,
-                                            fontSize: 22.0,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                      SizedBox(
-                                        height: 7,
-                                      ),
-                                      Text(
-                                        "2000",
+                                        "4",
                                         style: TextStyle(
                                             color: Colors.black,
-                                            fontSize: 22.0,
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w300),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      IconButton(
+                                          // Use the FaIcon Widget + FontAwesomeIcons class for the IconData
+                                          icon: FaIcon(FontAwesomeIcons.user),
+                                          color: theme.primaryColor,
+                                          onPressed: () {
+                                            print("Pressed");
+                                          }),
+                                      Text(
+                                        "15",
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16.0,
                                             fontWeight: FontWeight.w300),
                                       )
                                     ],
@@ -246,7 +269,16 @@ class _FarmPageState extends State<FarmPage> {
                               ),
                               primary: theme.primaryColor,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return PlantingPage(
+                                    vegetables: vegetables,
+                                  );
+                                }),
+                              );
+                            },
                             child: const Text('Select Farm'),
                           )
                         ],

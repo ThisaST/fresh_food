@@ -6,13 +6,16 @@ import 'dart:io';
 import 'package:agri_tech_app/src/farm/farm_repository.dart';
 import 'package:agri_tech_app/src/farm/models/farm.dart';
 import 'package:agri_tech_app/src/farm/view/farm_page.dart';
+import 'package:agri_tech_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agri_tech_app/src/app/app.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location/location.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show PlatformException, rootBundle;
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HomePage extends StatefulWidget {
   static Page page() => MaterialPage<void>(child: HomePage());
@@ -24,6 +27,47 @@ class _HomePageState extends State<HomePage> {
   final Map<String, Marker> _markers = {};
 
   List<Farm> availableFarms = [];
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
+  @override
+  initState() {
+    super.initState();
+
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e.toString());
+      return;
+    }
+
+    if (!mounted) {
+      return Future.value(null);
+    }
+
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    debugPrint('$result');
+    setState(() {
+      _connectionStatus = result;
+    });
+  }
 
   Future<ui.Image> getImageFromPath(String imagePath) async {
     final data = (await rootBundle.load(imagePath)).buffer.asUint8List();
@@ -43,10 +87,10 @@ class _HomePageState extends State<HomePage> {
 
     final Radius radius = Radius.circular(size.width / 2);
 
-    final Paint tagPaint = Paint()..color = Colors.blue;
+    final Paint tagPaint = Paint()..color = Colors.green;
     final double tagWidth = 40.0;
 
-    final Paint shadowPaint = Paint()..color = Colors.blue.withAlpha(100);
+    final Paint shadowPaint = Paint()..color = Colors.green.withAlpha(200);
     final double shadowWidth = 15.0;
 
     final Paint borderPaint = Paint()..color = Colors.white;
@@ -90,16 +134,16 @@ class _HomePageState extends State<HomePage> {
 
     // Add tag text
     TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
-    textPainter.text = TextSpan(
-      text: '1',
-      style: TextStyle(fontSize: 20.0, color: Colors.white),
-    );
+    // textPainter.text = TextSpan(
+    //   text: '',
+    //   style: TextStyle(fontSize: 20.0, color: Colors.white),
+    // );
 
-    textPainter.layout();
-    textPainter.paint(
-        canvas,
-        Offset(size.width - tagWidth / 2 - textPainter.width / 2,
-            tagWidth / 2 - textPainter.height / 2));
+    // textPainter.layout();
+    // textPainter.paint(
+    //     canvas,
+    //     Offset(size.width - tagWidth / 2 - textPainter.width / 2,
+    //         tagWidth / 2 - textPainter.height / 2));
 
     // Oval for the image
     Rect oval = Rect.fromLTWH(imageOffset, imageOffset,
@@ -137,7 +181,6 @@ class _HomePageState extends State<HomePage> {
     StreamSubscription<QuerySnapshot> _currentSubscription;
 
     List<DocumentSnapshot> farmSnapshots;
-    debugPrint('movieTitle: $availableFarms');
 
     late GoogleMapController mapController;
     Location _location = Location();
@@ -433,40 +476,51 @@ class _HomePageState extends State<HomePage> {
                 farmSnapshots.map((e) => Farm.fromSnapshot(e)).toList();
 
             availableFarms = farms;
-            return Stack(
-              children: [
-                GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  mapType: MapType.normal,
-                  initialCameraPosition: CameraPosition(
-                    target: _center,
-                    zoom: 11.0,
-                  ),
-                  myLocationEnabled: true,
-                  markers: _markers.values.toSet(),
-                ),
-                Positioned(
-                    child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 600.0),
-                    height: 100,
-                    child: ListView(
-                      children: [
-                        Container(
-                          width: 160.0,
-                          color: Colors.red,
-                        ),
-                        Container(
-                          width: 160.0,
-                          color: Colors.blue,
-                        ),
-                      ],
+
+            switch (_connectionStatus) {
+              case ConnectivityResult.none:
+                return SpinKitRotatingCircle(
+                  color: theme.primaryColor,
+                  size: 50.0,
+                );
+              case ConnectivityResult.wifi:
+              case ConnectivityResult.mobile:
+              default:
+                return Stack(
+                  children: [
+                    GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      mapType: MapType.normal,
+                      initialCameraPosition: CameraPosition(
+                        target: _center,
+                        zoom: 11.0,
+                      ),
+                      myLocationEnabled: true,
+                      markers: _markers.values.toSet(),
                     ),
-                  ),
-                ))
-              ],
-            );
+                    Positioned(
+                        child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 600.0),
+                        height: 100,
+                        child: ListView(
+                          children: [
+                            Container(
+                              width: 160.0,
+                              color: Colors.red,
+                            ),
+                            Container(
+                              width: 160.0,
+                              color: Colors.blue,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ))
+                  ],
+                );
+            }
           }),
       // body: Align(
       //   alignment: const Alignment(0, -1 / 3),
