@@ -22,7 +22,7 @@ class SignUpForm extends StatelessWidget {
         }
       },
       child: Align(
-        alignment: const Alignment(0, 0.8),
+        alignment: const Alignment(0, 0.2),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

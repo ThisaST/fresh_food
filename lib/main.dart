@@ -1,6 +1,5 @@
 import 'package:agri_tech_app/src/app/app.dart';
 import 'package:agri_tech_app/src/app/bloc_observer.dart';
-import 'package:agri_tech_app/src/login.dart';
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';

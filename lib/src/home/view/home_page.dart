@@ -1,18 +1,130 @@
 import 'dart:async';
-import 'dart:developer';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:agri_tech_app/src/farm/farm_repository.dart';
 import 'package:agri_tech_app/src/farm/models/farm.dart';
+import 'package:agri_tech_app/src/farm/view/farm_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agri_tech_app/src/app/app.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location/location.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  static Page page() => MaterialPage<void>(child: HomePage());
+  @override
+  _HomePageState createState() => _HomePageState();
+}
 
-  static Page page() => const MaterialPage<void>(child: HomePage());
+class _HomePageState extends State<HomePage> {
+  final Map<String, Marker> _markers = {};
+
+  List<Farm> availableFarms = [];
+
+  Future<ui.Image> getImageFromPath(String imagePath) async {
+    final data = (await rootBundle.load(imagePath)).buffer.asUint8List();
+
+    final Completer<ui.Image> completer = new Completer();
+
+    ui.decodeImageFromList(data, (ui.Image img) {
+      return completer.complete(img);
+    });
+
+    return completer.future;
+  }
+
+  Future<BitmapDescriptor> getMarkerIcon(String imagePath, Size size) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    final Radius radius = Radius.circular(size.width / 2);
+
+    final Paint tagPaint = Paint()..color = Colors.blue;
+    final double tagWidth = 40.0;
+
+    final Paint shadowPaint = Paint()..color = Colors.blue.withAlpha(100);
+    final double shadowWidth = 15.0;
+
+    final Paint borderPaint = Paint()..color = Colors.white;
+    final double borderWidth = 3.0;
+
+    final double imageOffset = shadowWidth + borderWidth;
+
+    // Add shadow circle
+    canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(0.0, 0.0, size.width, size.height),
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+        shadowPaint);
+
+    // Add border circle
+    canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(shadowWidth, shadowWidth,
+              size.width - (shadowWidth * 2), size.height - (shadowWidth * 2)),
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+        borderPaint);
+
+    // Add tag circle
+    canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(size.width - tagWidth, 0.0, tagWidth, tagWidth),
+          topLeft: radius,
+          topRight: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+        tagPaint);
+
+    // Add tag text
+    TextPainter textPainter = TextPainter(textDirection: TextDirection.ltr);
+    textPainter.text = TextSpan(
+      text: '1',
+      style: TextStyle(fontSize: 20.0, color: Colors.white),
+    );
+
+    textPainter.layout();
+    textPainter.paint(
+        canvas,
+        Offset(size.width - tagWidth / 2 - textPainter.width / 2,
+            tagWidth / 2 - textPainter.height / 2));
+
+    // Oval for the image
+    Rect oval = Rect.fromLTWH(imageOffset, imageOffset,
+        size.width - (imageOffset * 2), size.height - (imageOffset * 2));
+
+    // Add path for oval image
+    canvas.clipPath(Path()..addOval(oval));
+
+    // Add image
+    ui.Image image = await getImageFromPath(
+        imagePath); // Alternatively use your own method to get the image
+    paintImage(canvas: canvas, image: image, rect: oval, fit: BoxFit.fitWidth);
+
+    // Convert canvas to image
+    final ui.Image markerAsImage = await pictureRecorder
+        .endRecording()
+        .toImage(size.width.toInt(), size.height.toInt());
+
+    // Convert image to bytes
+    final ByteData? byteData =
+        await markerAsImage.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List uint8List = byteData!.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(uint8List);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +136,271 @@ class HomePage extends StatelessWidget {
 
     StreamSubscription<QuerySnapshot> _currentSubscription;
 
-    debugPrint('movieTitle: $farms');
+    List<DocumentSnapshot> farmSnapshots;
+    debugPrint('movieTitle: $availableFarms');
 
     late GoogleMapController mapController;
+    Location _location = Location();
 
-    final LatLng _center = const LatLng(45.521563, -122.677433);
+    final LatLng _center = const LatLng(6.9271, 79.8612);
 
-    void _onMapCreated(GoogleMapController controller) {
+    void _onMapCreated(GoogleMapController controller) async {
       mapController = controller;
+      final icon = await getMarkerIcon(
+          "lib/src/assets/images/barn.png", Size(150.0, 150.0));
+      mapController.setMapStyle('''[
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#ebe3cd"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#523735"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#f5f1e6"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#c9b2a6"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.country",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#489608"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#dcd2be"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#ae9e90"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape.natural",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#93817c"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#a5b076"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#447530"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f5f1e6"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#fdfcf8"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f8c967"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#e9bc62"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e98d58"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#db8555"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#806b63"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#8f7d77"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#ebe3cd"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#b9d3c2"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#92998d"
+      }
+    ]
+  }
+]''');
+      setState(() {
+        _markers.clear();
+
+        for (final farm in availableFarms) {
+          final marker = Marker(
+              markerId: MarkerId(farm.name),
+              icon: icon,
+              position: LatLng(farm.latitude, farm.longitude),
+              infoWindow: InfoWindow(
+                title: farm.name,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return FarmPage(farm: farm);
+                  }),
+                );
+              });
+          _markers[farm.name] = marker;
+        }
+      });
+      // _location.onLocationChanged.listen((l) {
+      //   mapController.animateCamera(
+      //     CameraUpdate.newCameraPosition(
+      //       CameraPosition(target: LatLng(l.latitude!, l.longitude!), zoom: 15),
+      //     ),
+      //   );
+      // });
     }
 
     // final  snapshots = loadAllRestaurants().map((snap) => Farm.fromSnapshot(snap));
@@ -59,13 +428,44 @@ class HomePage extends StatelessWidget {
           builder: (context, snapshot) {
             if (!snapshot.hasData) return const LinearProgressIndicator();
 
-            return GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 11.0,
-              ),
-              myLocationEnabled: true,
+            farmSnapshots = snapshot.data?.docs ?? [];
+            final farms =
+                farmSnapshots.map((e) => Farm.fromSnapshot(e)).toList();
+
+            availableFarms = farms;
+            return Stack(
+              children: [
+                GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: _center,
+                    zoom: 11.0,
+                  ),
+                  myLocationEnabled: true,
+                  markers: _markers.values.toSet(),
+                ),
+                Positioned(
+                    child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 600.0),
+                    height: 100,
+                    child: ListView(
+                      children: [
+                        Container(
+                          width: 160.0,
+                          color: Colors.red,
+                        ),
+                        Container(
+                          width: 160.0,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  ),
+                ))
+              ],
             );
           }),
       // body: Align(

@@ -1,4 +1,6 @@
+import 'package:agri_tech_app/src/delivery/delivery_page.dart';
 import 'package:agri_tech_app/src/home/home.dart';
+import 'package:agri_tech_app/src/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'cubit/botttom_nav_cubit.dart';
@@ -8,9 +10,7 @@ class MainPage extends StatelessWidget {
   ///
   static Page page() => MaterialPage<void>(child: MainPage());
 
-  final _pageNavigation = [
-    HomePage(),
-  ];
+  final _pageNavigation = [HomePage(), DeliveryPage(), ProfilePage()];
 
   late BuildContext homeContext;
 
@@ -40,11 +40,11 @@ class MainPage extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       onTap: _getChangeBottomNav,
       items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Garden"),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Farm"),
         BottomNavigationBarItem(
             icon: Icon(Icons.date_range), label: "Delivery"),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.notification_important), label: 'Notification'),
+        // BottomNavigationBarItem(
+        //     icon: Icon(Icons.notification_important), label: 'Notification'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
       ],
     );
